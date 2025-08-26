@@ -34,12 +34,14 @@ class ImportCars extends Command {
         
 
         foreach ($data as $item) {
-            
-            Car::updateOrCreate(
+            $jsonHash = md5(json_encode($item));
 
-                
-                ['external_id' => $item['id']],
-                [
+            $car = Car::where('external_id', $item['id'])->first();
+
+            if (!$car) {
+                // Cria novo carro
+                Car::create([
+                    'external_id' => $item['id'],
                     'type' => $item['type'] ?? null,
                     'brand' => $item['brand'] ?? null,
                     'model' => $item['model'] ?? null,
@@ -63,9 +65,41 @@ class ImportCars extends Command {
                     'color' => $item['color'] ?? null,
                     'fuel' => $item['fuel'] ?? null,
                     'fotos' => json_encode($item['fotos'] ?? []),
-                ]
-            );
+                    'json_hash' => $jsonHash,
+                ]);
+            } else {
+                // Atualiza apenas se o hash mudou
+                if ($car->json_hash !== $jsonHash) {
+                    $car->update([
+                        'type' => $item['type'] ?? null,
+                        'brand' => $item['brand'] ?? null,
+                        'model' => $item['model'] ?? null,
+                        'version' => $item['version'] ?? null,
+                        'year_model' => $item['year']['model'] ?? null,
+                        'year_build' => $item['year']['build'] ?? null,
+                        'optionals' => json_encode($item['optionals'] ?? []),
+                        'doors' => $item['doors'] ?? null,
+                        'board' => $item['board'] ?? null,
+                        'chassi' => $item['chassi'] ?? null,
+                        'transmission' => $item['transmission'] ?? null,
+                        'km' => $item['km'] ?? null,
+                        'description' => $item['description'] ?? null,
+                        'created_api' => $item['created'] ?? null,
+                        'updated_api' => $item['updated'] ?? null,
+                        'sold' => isset($item['sold']) ? (bool)$item['sold'] : false,
+                        'category' => $item['category'] ?? null,
+                        'url_car' => $item['url_car'] ?? null,
+                        'old_price' => $item['old_price'] ?? null,
+                        'price' => $item['price'] ?? null,
+                        'color' => $item['color'] ?? null,
+                        'fuel' => $item['fuel'] ?? null,
+                        'fotos' => json_encode($item['fotos'] ?? []),
+                        'json_hash' => $jsonHash,
+                    ]);
+                }
+            }
         }
+
 
         $this->info("Importação concluída com sucesso!");
         return Command::SUCCESS;

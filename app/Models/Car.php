@@ -36,4 +36,11 @@ class Car extends Model
         'fuel',
         'fotos',
     ];
+
+    protected $casts = [
+        'sold' => 'boolean',
+        'optionals' => 'array',
+        'fotos' => 'array',
+    ];
+
 }
