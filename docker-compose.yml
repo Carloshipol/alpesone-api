@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: alpesone_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - db
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: alpesone
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+    ports:
+      - "8000:8000"
+    networks:
+      - alpesnet
+
+  db:
+    image: mysql:8.0.36
+    container_name: alpesone_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: alpesone
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - alpesnet
+
+networks:
+  alpesnet:
+    driver: bridge
+
+volumes:
+  db_data:
