@@ -60,5 +60,5 @@ jobs:
           context: .
           push: true
           tags: |
-            carloshipol/alpesone-api:latest
-            carloshipol/alpesone-api:${{ github.sha }}
+            carloshipoldev/alpesone-api:latest
+            carloshipoldev/alpesone-api:${{ github.sha }}
