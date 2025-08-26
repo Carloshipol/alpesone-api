@@ -1,4 +1,4 @@
-name: CI/CD Laravel Docker
+name: CI/CD Laravel Docker + Deploy EC2
 
 on:
   push:
@@ -10,11 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-   
       - name: Checkout code
         uses: actions/checkout@v3
 
-     
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -22,18 +20,15 @@ jobs:
           extensions: mbstring, bcmath, pdo_mysql
           coverage: none
 
-      
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-scripts --no-progress
 
-     
       - name: Setup environment
         run: cp .env.example .env
 
       - name: Generate Laravel key
         run: php artisan key:generate
 
-      
       - name: Run tests
         run: php artisan test
 
@@ -42,18 +37,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
       - name: Checkout code
         uses: actions/checkout@v3
 
-     
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-    
       - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -62,3 +54,28 @@ jobs:
           tags: |
             carloshipoldev/alpesone-api:latest
             carloshipoldev/alpesone-api:${{ github.sha }}
+
+  deploy:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.EC2_KEY }}
+
+      - name: Copy files to EC2
+        run: |
+          scp -r -o StrictHostKeyChecking=no ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/alpesone-api
+
+      - name: Deploy on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            cd /home/ubuntu/alpesone-api
+            docker compose down
+            docker compose pull
+            docker compose up -d --build
+          EOF
