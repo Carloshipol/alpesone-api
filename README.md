@@ -12,31 +12,57 @@ A Laravel API to import car data via JSON/API, store it in a database, and provi
 
 ## Database Schema
 cars
+
 ├─ id (PK)
+
 ├─ external_id
+
 ├─ type
+
 ├─ brand
+
 ├─ model
+
 ├─ version
+
 ├─ year_model
+
 ├─ year_build
+
 ├─ optionals (JSON)
+
 ├─ doors
+
 ├─ board
+
 ├─ chassi
+
 ├─ transmission
+
 ├─ km
+
 ├─ description
+
 ├─ created_api
+
 ├─ updated_api
+
 ├─ sold
+
 ├─ category
+
 ├─ url_car
+
 ├─ old_price
+
 ├─ price
+
 ├─ color
+
 ├─ fuel
+
 ├─ photos (JSON)
+
 ├─ json_hash
 
 ## Setup Instructions (Docker)
