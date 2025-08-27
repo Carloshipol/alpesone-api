@@ -69,11 +69,11 @@ jobs:
 
       - name: Copy files to EC2
         run: |
-          scp -r -o StrictHostKeyChecking=no ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/alpesone-api
+          scp -r -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/alpesone-api
 
       - name: Deploy on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             cd /home/ubuntu/alpesone-api
             docker compose down
             docker compose pull
