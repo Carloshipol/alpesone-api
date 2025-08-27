@@ -8,7 +8,6 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -18,7 +17,6 @@ jobs:
         with:
           php-version: '8.2'
           extensions: mbstring, bcmath, pdo_mysql
-          coverage: none
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-scripts --no-progress
@@ -35,7 +33,6 @@ jobs:
   docker:
     needs: build-and-test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -62,18 +59,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup SSH
+      - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.EC2_KEY }}
 
-      - name: Copy files to EC2
+      - name: Add EC2 to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync files to EC2
         run: |
           rsync -avz --exclude='.git' --exclude='vendor' --exclude='.github' ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/alpesone-api
 
       - name: Deploy on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             cd /home/ubuntu/alpesone-api
             docker compose down
             docker compose pull
